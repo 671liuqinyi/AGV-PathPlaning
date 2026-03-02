@@ -1,3 +1,4 @@
+import datetime
 import os
 
 from algorithm.DQN_structure.DQN import Net as Net
@@ -9,7 +10,13 @@ from utils.path_utils import get_target_dir
 
 np.set_printoptions(threshold=np.inf)
 
-
+# save_path = 'algorithm/DQN_structure/323321'
+# save_path = 'algorithm/DQN_structure/423421'
+save_path = 'algorithm/DQN_structure/523521'
+if not os.path.exists(save_path):
+    os.makedirs(save_path)
+    os.makedirs(save_path + '/train')
+    os.makedirs(save_path + '/test')
 
 
 class DQNAgentController:
@@ -38,15 +45,15 @@ class DQNAgentController:
             target_net = Net(self.state_number, self.rmfs_model.action_number, map_xdim, map_ydim)
         elif self.control_mode == "use_NN":
             print("load NN")
-            policy_net = torch.load('algorithm/DQN_structure/network_picture/RMFS_DQN_policy_net.pt')
-            target_net = torch.load('algorithm/DQN_structure/network_picture/RMFS_DQN_target_net.pt')
+            policy_net = torch.load(f'{save_path}/RMFS_DQN_policy_net.pt')
+            target_net = torch.load(f'{save_path}/RMFS_DQN_target_net.pt')
 
         '''create Agent object'''
         self.agent = Agent(policy_net, target_net)
         ############################################# control_mode是否还在使用
 
         '''training parameters'''
-        self.simulation_times = 500
+        self.simulation_times = 800
         self.max_value = max_task * 3
         self.max_value_times = 0
         self.duration_times = 60
@@ -73,7 +80,7 @@ class DQNAgentController:
         self.action_length_record = 0
         self.time_list = []
 
-    def model_run(self):  # mainloop for training/running
+    def model_run(self, run_mode):  # mainloop for training/running
         print("model is controlled by neural network")
         for i_episode in range(self.simulation_times):
             self.self_init()
@@ -97,17 +104,19 @@ class DQNAgentController:
                 # 改变lr
                 self.agent.change_explore_rate(times=200)
 
-            if i_episode % 100 == 0:
+            if (i_episode + 1) % 100 == 0 and run_mode == 'train_NN':
                 self.save_neural_network(auto=True)
-            # check whether determination condition meets
+                # check whether determination condition meets
             if self.check_determination(self.reward_acc):
                 break
-        self.save_neural_network(auto=False)
-        self.save_log()
-        self.draw_picture(self.lifelong_reward, p_title="Cumulative Reward", p_xlabel="training episodes",
-                          p_ylabel="cumulative reward", p_color="g")
-        self.draw_picture(self.agent.loss_value, p_title="Loss Value", p_xlabel="Training steps", p_ylabel="Loss value",
-                          p_color="k")
+        if run_mode == 'train_NN':
+            self.save_neural_network(auto=False)
+            self.draw_picture(self.lifelong_reward, p_title="Cumulative Reward", p_xlabel="training episodes",
+                              p_ylabel="cumulative reward", p_color="g", )
+            self.draw_picture(self.agent.loss_value, p_title="Loss Value", p_xlabel="Training steps",
+                              p_ylabel="Loss value",
+                              p_color="k", )
+        self.save_log(run_mode=run_mode)
         plt.show()
 
     def choose_action(self, all_info, this_veh):  # all_infor=[layout  , current_place, target_place
@@ -325,7 +334,7 @@ class DQNAgentController:
         plt.ylabel(p_ylabel)
         plt.plot(p_data, color=p_color)
         plt.tight_layout()  # 去除白边
-        plt.savefig('algorithm/DQN_structure/network_picture/' + p_title, dpi=300)  # 设置存储格式和分辨率
+        plt.savefig(f'{save_path}/' + p_title, dpi=300)  # 设置存储格式和分辨率
 
     def check_determination(self, reward_accu):
         # check whether the determination meets
@@ -350,18 +359,30 @@ class DQNAgentController:
         else:
             return False
 
-    def save_neural_network(self, auto=False):
+    def save_neural_network(self, auto=False, run_mode=''):
+        # 非训练模式不保存
+        # if run_mode != 'train_NN':
+        #     return
         if auto:
             print("neural network auto-save")
             print(os.getcwd())
-            torch.save(self.agent.policy_network, 'algorithm/DQN_structure/network_picture/RMFS_DQN_policy_net_auto.pt')
-            torch.save(self.agent.target_network, 'algorithm/DQN_structure/network_picture/RMFS_DQN_target_net_auto.pt')
+            torch.save(self.agent.policy_network, f'{save_path}/RMFS_DQN_policy_net_auto.pt')
+            torch.save(self.agent.target_network, f'{save_path}/RMFS_DQN_target_net_auto.pt')
         else:
-            torch.save(self.agent.policy_network, 'algorithm/DQN_structure/network_picture/RMFS_DQN_policy_net.pt')
-            torch.save(self.agent.target_network, 'algorithm/DQN_structure/network_picture/RMFS_DQN_target_net.pt')
+            torch.save(self.agent.policy_network, f'{save_path}/RMFS_DQN_policy_net.pt')
+            torch.save(self.agent.target_network, f'{save_path}/RMFS_DQN_target_net.pt')
 
-    def save_log(self):
-        with open('algorithm/DQN_structure/network_picture/logs.txt', 'w') as f:
+    def save_log(self, run_mode=''):
+        # 获取当前时间并格式化为指定样式
+        current_time = datetime.datetime.now()
+        # 格式化：年-月-日--时-分-log.txt
+        time_str = current_time.strftime("%Y-%m-%d--%H-%M-log.txt")
+        if run_mode == 'train_NN':
+            log_path = f'{save_path}/train/{time_str}'
+        else:
+            log_path = f'{save_path}/test/{time_str}'
+
+        with open(log_path, 'w') as f:
             for one_log in self.logs:
                 f.write(one_log)
                 f.write("\r\n")

@@ -110,6 +110,8 @@ class Scene:
         """---main loop---"""
         while True:
             self.running_time += 1
+            if self.running_time >= self.max_training_steps:
+                print(f"警告：步数触达上限{self.max_training_steps}，任务完成状态：{self.layout.task_finished}")
             if self.render:
                 self.create_interface()  # create interface
             input_action, key_input_action = "", ""

@@ -12,6 +12,7 @@ class Cell:
         self.h = 0
         self.f = 0
         self.all_cost = 0
+        self.scanned_count = 0
 
 
 class Gridworld:
@@ -39,9 +40,10 @@ class Gridworld:
         current_x = cell.position[0]
         current_y = cell.position[1]
         neighbours = []
-        for n in neighbour_cord:
-            x = current_x + n[0]
-            y = current_y + n[1]
+        # 修改：变量命名优化
+        for dx, dy in neighbour_cord:
+            x = current_x + dx
+            y = current_y + dy
             if 0 <= x < self.world_x_limit and 0 <= y < self.world_y_limit and self.wm[y][x] == 1.:
                 c = Cell()
                 c.position = (x, y)
@@ -77,7 +79,7 @@ class FindPathAstar:
         self.find_target = False
         # print("_open", _open)
         # print("len(_open)", len(_open))
-
+        scanned_count = 0  # ←←← 新增：初始化计数器
         while _open:
             # print("_open", _open)
             # print("_________________")
@@ -86,6 +88,7 @@ class FindPathAstar:
             min_f = np.argmin([n.all_cost for n in _open])  # 最小值的下标
             current_cell = _open[min_f]
             _closed.append(_open.pop(min_f))  # 移除列表中的一个元素（默认最后一个元素），并且返回该元素的值
+            scanned_count += 1
 
             if current_cell.position == self.target_cell.position:
                 self.find_target = True
@@ -102,9 +105,11 @@ class FindPathAstar:
                 n.g = current_cell.g + 1
                 x1, y1 = n.position
                 x2, y2 = self.target_cell.position
+                # 修改:使用 曼哈顿距离 替换 欧氏距离平方
                 n.h = (y2 - y1) ** 2 + (x2 - x1) ** 2
+                # n.h = abs(y2 - y1) + abs(x2 - x1)
                 n.f = n.h + n.g
-
+                # n.all_cost = n.f
                 already_in = False
                 for c in _open:
                     if c.position == n.position:
@@ -119,7 +124,7 @@ class FindPathAstar:
                     pass
                 else:
                     _open.append(n)
-
+        self.scanned_count = scanned_count  # ←←← 保存结果到实例变量
         if self.find_target:
             path = []
             while current_cell.parent is not None:
@@ -139,9 +144,9 @@ class FindPathAstar:
     def astar_plot_action_route(self):
         self.action_list = []
         action_str = ""
-        for i in range(len(self.path_list)-1, 0, -1):
+        for i in range(len(self.path_list) - 1, 0, -1):
             current_position = self.path_list[i]
-            next_position = self.path_list[i-1]
+            next_position = self.path_list[i - 1]
             if current_position[0] < next_position[0]:
                 action_str = "RIGHT"
             elif current_position[0] > next_position[0]:
@@ -188,7 +193,7 @@ if __name__ == "__main__":
     print("path_list", path_list)
     print("path_map", path_map)
     print("action_list", action_list)
-
+    print("scanned_count", founder.scanned_count)
     # world = Gridworld()
     # #   stat position and Goal
     # start = Cell()

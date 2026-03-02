@@ -1,0 +1,10 @@
+i_episode 0	reward_accu: -1 	action_length: 14
+i_episode 1	reward_accu: -1 	action_length: 15
+i_episode 2	reward_accu: -1 	action_length: 17
+i_episode 3	reward_accu: -1 	action_length: 16
+i_episode 4	reward_accu: -1 	action_length: 14
+i_episode 5	reward_accu: -1 	action_length: 16
+i_episode 6	reward_accu: 0 	action_length: 9
+i_episode 7	reward_accu: -1 	action_length: 3
+i_episode 8	reward_accu: -1 	action_length: 3
+i_episode 9	reward_accu: -1 	action_length: 21

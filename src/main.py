@@ -14,6 +14,8 @@ from multiAGVscene.Explorer import Explorer  # explorer
 from multiAGVscene.Scene import Scene  # Scene
 from src.algorithm.Manager.ExpertManager import Expert as Expert
 from algorithm.DQN_structure.Controller import DQNAgentController as modelController
+
+
 # from algorithm.AC_structure.Controller import ACAgentController as modelController
 # from algorithm.PG_structure.Controller import PGAgentController as modelController
 # from src.algorithm.MADQN_structure.Controller import MADQNAgentController as modelController
@@ -41,7 +43,7 @@ def main():
 
     """--------------choose different controller--------------"""
     control_type = {0: "train_NN", 1: "use_NN", 2: "A_star", 3: "manual", 4: "Expert"}
-    control_mode = 0
+    control_mode = 4
 
     """--------------run model--------------"""
     print("Model is controlled by %s mode" % control_type[control_mode])
@@ -49,7 +51,7 @@ def main():
         multi_agv_scene.run_game(control_pattern=control_type[control_mode])
     if control_mode in [4]:
         expert = Expert(multi_agv_scene, ss_x_width, ss_y_width, ss_x_num, ss_y_num, ps_num, explorer_num)
-        expert.create_data_by_self(times=750)
+        expert.create_data_by_self(times=1)
     if control_mode in [0, 1]:
         map_xdim = layout.scene_x_width
         map_ydim = layout.scene_y_width
@@ -61,7 +63,7 @@ def main():
                                 control_mode=control_type[control_mode], state_number=3)
         # agent = modelController(multi_agv_scene, map_xdim=7, map_ydim=7, max_task=max_task,
         #                         control_mode=control_type[control_mode], state_number=3)
-        agent.model_run()
+        agent.model_run(run_mode=control_type[control_mode])
 
 
 if __name__ == '__main__':
@@ -78,7 +80,6 @@ if __name__ == '__main__':
 
     # args = readCommand(sys.argv[1:])  # Get game multiAGVscene based on input
     main()
-
 
     # layout_list = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     #                [0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0],
@@ -106,8 +107,3 @@ if __name__ == '__main__':
     #                9, 9, 4, 13), (4, 5, 10, 13), (11, 6, 4, 13), (3, 6, 4, 13), (10, 5, 10, 13), (8, 9, 10, 13), (
     #                5, 9, 4, 13), (3, 3, 10, 13), (9, 7, 4, 13), (2, 11, 10, 13), (6, 7, 4, 13), (9, 3, 4, 13), (
     #                12, 11, 4, 13)]
-
-
-
-
-

@@ -286,9 +286,9 @@ class Agent:
         # print("batch_s", batch_s)
         batch_r = torch.Tensor(batch_r).unsqueeze(1).to(self.device)
         # print(batch_r)
-        print("batch_a", batch_a)
+        # print("batch_a", batch_a)
         batch_a = torch.LongTensor(batch_a).unsqueeze(1).to(self.device)
-        print("batch_a_", batch_a)
+        # print("batch_a_", batch_a)
         batch_n = torch.from_numpy(np.stack(batch_n)).float().to(self.device)
         batch_is_done = torch.LongTensor(batch_is_done).unsqueeze(1).to(self.device)
 
